@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.2.6",
     "antd": "^5.11.1",
     "axios": "^1.6.1",
     "localforage": "^1.10.0",
@@ -17,6 +18,7 @@
     "mobx": "^6.10.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-router-dom": "^6.18.0",
     "sort-by": "^1.2.0"
   },
