@@ -1,15 +1,23 @@
-import React from 'react';
-import { Table} from 'antd';
+import React, {useEffect} from 'react';
+import {Flex, Table} from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import VisitType from "../types/visitType";
 import DeleteBtn from "./DeleteBtn";
+import EditBtn from "./EditBtn";
+import RootStore from "../stores/RootStore.jsx";
+import useHttp from "../hooks/useHttp.js";
+import Urls from "../constants/url";
+import {runInAction} from "mobx";
+import {observer} from 'mobx-react';
+import formatDate from "../utils/formatDate.js"
+import {getNameFile} from "../utils/getNameFile.js"
 
 
 const columns: ColumnsType<VisitType> = [
     {
         title: 'Дата',
-        dataIndex: 'date',
-        key: 'date',
+        dataIndex: 'date_format',
+        key: 'date_format',
     },
     {
         title: 'Продолжительность',
@@ -23,41 +31,53 @@ const columns: ColumnsType<VisitType> = [
     },
     {
         title: 'Комментарий',
-        dataIndex: 'comments',
-        key: 'comments',
+        dataIndex: 'comment',
+        key: 'comment',
+    },
+    {
+        title: 'Фото',
+        dataIndex: 'photo_name',
+        key: 'photo_name',
     },
     {
         title: 'Действие',
         key: 'action',
         dataIndex: 'action',
-        render: (_) => (<DeleteBtn/>),
     }
 ];
 
-const data: VisitType[] = [
-    {
-        key: '1',
-        date: '11.11.2023',
-        duration: '1.5 часа',
-        price: '16 рублей',
-        comments: 'Опаздывает на 10 минут',
-    },
-    {
-        key: '2',
-        date: '11.11.2011',
-        duration: '1 час',
-        price: '160 рублей',
-        comments: 'Чувствительная кожа',
-    },
-    {
-        key: '3',
-        date: '11.11.2023',
-        duration: '1.5 часа',
-        price: '16 рублей',
-        comments: 'Опаздывает на 10 минут',
-    },
-];
 
-const TableVisits: React.FC = () => <Table columns={columns} dataSource={data} />;
+const TableVisits: React.FC = observer(({id, setIdVisit, onClickEditVisit}) => {
+    const rootStore = RootStore();
+    const {VisitStore} = rootStore.useStores();
+    const {getRequest} = useHttp();
+
+
+    const loadData = () => {
+        getRequest({url: `${Urls().visits}/${id}`})
+            .then(data => data["data"])
+            .then(results =>{
+                results = results.map(item => {
+                    return {...item, key : item.id, action : <Flex><EditBtn  title="Редактировать сведения о посещении" onClick={() => {
+                        setIdVisit(Number(item.id))
+                        onClickEditVisit();
+                    }
+                        }/><DeleteBtn  id={item.id} store={VisitStore} url={Urls().visits}/></Flex>,
+                        date_format: item.date ? formatDate(item.date) : null,
+                        photo_name: getNameFile(item.photo || '')
+                    }
+                });
+                VisitStore.Result = [...results]
+            } )
+            .catch(error => console.log(error))
+    };
+
+
+    useEffect(()=> runInAction(() => loadData()), [])
+    useEffect(()=> runInAction(() => loadData()), [id])
+    return (
+        <Table columns={columns} dataSource={VisitStore.sortByDateDesc()} />
+    )
+})
 
 export default TableVisits;

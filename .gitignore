@@ -134,3 +134,6 @@ workspace.xml
 /build
 .idea/
 package-lock.json
+
+/backend/temp
+/backend/public
