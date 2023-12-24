@@ -6,7 +6,6 @@ import {ConfigProvider, theme} from "antd";
 import RootStore from "./stores/RootStore";
 import dayjs from 'dayjs';
 import ruRU from 'antd/locale/ru_RU';
-import ModalNewClient from "./components/ModalNewClient";
 
 const {darkAlgorithm, compactAlgorithm} = theme;
 const rootStore = RootStore();

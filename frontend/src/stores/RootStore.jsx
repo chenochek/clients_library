@@ -1,12 +1,13 @@
 import{ createContext, useContext } from 'react'
 import VisitStore from "./VisitsStore";
 import ClientsStore from "./ClientsStore";
+import BirthStore from "./BirthStore";
 
 
 
 const RootStore = () => {
 
-    const stores =  {VisitStore, ClientsStore};
+    const stores =  {VisitStore, ClientsStore, BirthStore};
 
     const StoreContext = createContext(stores);
 

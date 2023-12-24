@@ -5,7 +5,7 @@ import {EditOutlined} from "@ant-design/icons/lib";
 
 const EditBtn: React.FC = ({onClick, title}) => (
     <Tooltip placement="top" title={title}>
-        <Button type="primary" onClick={onClick} style={{ margin: 4 }} shape="circle" icon={<EditOutlined /> } />
+        <Button type="primary" onClick={onClick} style={{ margin: 4, width: 35, height: 35 }} shape="circle" icon={<EditOutlined /> } />
     </Tooltip>
 );
 

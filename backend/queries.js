@@ -25,7 +25,12 @@ const getClientById = (request, response) => {
     const id = parseInt(request.params.id);
 
     try {
-        pool.query('SELECT * FROM clients WHERE id = $1', [id], (error, results) => {
+        pool.query(`
+        SELECT clients.*, max(visits.date) as last_visit
+        FROM clients left join visits on clients.id = visits.client_id
+        WHERE clients.id = $1
+		GROUP BY clients.id order by clients.fio ASC
+        `, [id], (error, results) => {
             if (error) {
                 throw error
             }
@@ -47,7 +52,7 @@ const createClient = (request, response) => {
                 if (error) {
                     throw error
                 }
-                response.status(200).send({status:` Клиент успешно добавлен, ID: ${results.rows[0].id}`, id: results.rows[0].id })
+                response.status(200).send({status:` Клиент успешно добавлен, ID: ${results.rows[0].id}`, id: results.rows[0].id, client: results.rows[0] })
             })
 
     } catch(error) {
@@ -68,7 +73,7 @@ const updateClient = (request, response) => {
                 if (error) {
                     throw error
                 }
-                response.status(200).send({status:`Данные о клиенте успешно изменены: ${id}`, id: results.rows[0]})
+                response.status(200).send({status:`Данные о клиенте успешно изменены: ${id}`, id: results.rows[0], client: results.rows[0]})
             }
         )
 
@@ -97,9 +102,13 @@ const deleteClient = (request, response) => {
 
 const getInfoAboutBirth = (request, response) => {
     const {dateBirth} = request.body;
+    const queryString = `
+    SELECT * FROM clients WHERE EXTRACT(DAY from date_birth) = EXTRACT(DAY from TIMESTAMP with time zone '${dateBirth}')
+    and EXTRACT(MONTH from date_birth) = EXTRACT(MONTH from TIMESTAMP with time zone '${dateBirth}')
+    `
 
     try {
-        pool.query('SELECT * FROM clients WHERE date_birth = $1', [dateBirth], (error, results) => {
+        pool.query(queryString, (error, results) => {
             if (error) {
                 throw error
             }

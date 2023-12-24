@@ -8,6 +8,7 @@ import useHttp from "../hooks/useHttp.js";
 import Urls from "../constants/url";
 import {Link} from "react-router-dom";
 import formatDate from "../utils/formatDate.js"
+import {PaginationAlign, PaginationPosition} from "antd/es/pagination/Pagination";
 
 
 const ListCustom: React.FC = observer(() => {
@@ -18,6 +19,7 @@ const ListCustom: React.FC = observer(() => {
     const [align, setAlign] = useState<PaginationAlign>('center');
 
 
+
     return (
         <div
             id="scrollableDiv"
@@ -25,11 +27,13 @@ const ListCustom: React.FC = observer(() => {
                 overflow: 'auto',
                 padding: '0 16px',
                 border: '1px solid rgba(140, 140, 140, 0.35)',
-                width: 500
+                maxWidth: 500,
+                width: '100%',
+                margin: 10
             }}
         >
             <List
-                pagination={{ position, align, pageSize: 7}}
+                pagination={{ position, align, pageSize: 5}}
                 itemLayout="vertical"
                 dataSource={ClientsStore.Result}
                 renderItem={(item) => (

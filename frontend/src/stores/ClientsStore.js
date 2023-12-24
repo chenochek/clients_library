@@ -1,23 +1,19 @@
 import {observable, action} from 'mobx'
+import formatDate from "../utils/formatDate.js"
 
 const ClientsStore = observable({
     result: [],
     initial: [],
+    sortedArr: [],
     currentClient: {},
-    sort: 'fio',
     get Result() {
-        if(this.sort === 'fio') {
-            return this.sortByFio()
-        } else {
-            return this.sortByDate(this.sort)
-        }
+        return this.result;
     },
     get Initial() {
         return this.initial
     },
     set Result(newResult) {
         this.result = newResult;
-        this.initial = newResult;
     },
     set Initial(newResult) {
         this.initial = newResult;
@@ -28,6 +24,12 @@ const ClientsStore = observable({
     set CurrentClient(client) {
         this.currentClient = client;
     },
+    set SortedArr(newArr) {
+        this.sortedArr = newArr
+    },
+    get SortedArr() {
+        return this.sortedArr;
+    },
     getClientById(id) {
         return this.Result.find(el => el["id"] === id);
     },
@@ -35,8 +37,8 @@ const ClientsStore = observable({
         return this.Result.findIndex(el => el["id"] === id);
     },
     editClientById(id, newClient) {
-        const index = this.getClientIndexById(id);
-        this.Result[index] = newClient;
+        const index = this.getClientIndexById(Number(id));
+        this.result = [...this.result.slice(0, index), newClient, ...this.result.slice(index + 1)]
     },
 
     deleteById(id) {
@@ -46,20 +48,27 @@ const ClientsStore = observable({
         this.Result = [newClient, ...this.Result]
     },
     getLiveSearchResult(searchStr) {
-        return this.initial.filter(el => el["total"].toUpperCase().includes(searchStr.toUpperCase()));
+        return this.initial.filter(el => `${el.fio} ${el.mobile} ${el.date_birth && formatDate(el.date_birth)}`
+            .toUpperCase().includes(searchStr.toUpperCase()));
     },
-    sortByDate(key) {
+    doSort(sort, order) {
+        if (sort === 'fio') {
+            return this.sortByFio()
+        } else {
+            return this.sortByDate(sort, order)
+        }
+    },
+    sortByDate(key, order) {
         return this.result.slice().sort((a, b) => {
-            if (a[key] < b[key]) {
-                return -1;
+                const aDate = new Date(a[key]);
+                const bDate = new Date(b[key])
+                if (order === 'desc') {
+                    return  aDate - bDate;
+                } else {
+                    return bDate - aDate;
+                }
             }
-            if (a[key] > b[key]) {
-                return 1;
-            }
-
-            // names must be equal
-            return 0;
-        });
+        );
     },
     sortByFio() {
         return this.result.slice().sort((a, b) => {
@@ -73,7 +82,7 @@ const ClientsStore = observable({
             // names must be equal
             return 0;
         });
-    }
+    },
 })
 
 export default ClientsStore

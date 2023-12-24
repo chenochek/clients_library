@@ -119,4 +119,6 @@ app.get('/images/:name', async(req, res) => {
     }
 });
 
+app.post('/birthday', db.getInfoAboutBirth)
+
 

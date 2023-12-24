@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {Flex, Table} from 'antd';
+import {Button, Flex, List, Table} from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import VisitType from "../types/visitType";
 import DeleteBtn from "./DeleteBtn";
@@ -47,11 +47,21 @@ const columns: ColumnsType<VisitType> = [
 ];
 
 
-const TableVisits: React.FC = observer(({id, setIdVisit, onClickEditVisit}) => {
+const TableVisits: React.FC = observer(({id, setIdVisit, onClickEditVisit,  setFilePath,
+                                            setVisibleImage}) => {
     const rootStore = RootStore();
     const {VisitStore} = rootStore.useStores();
     const {getRequest} = useHttp();
 
+
+    const onClickPhoto = (photo) => {
+        return () => {
+            if(!photo) return;
+            setVisibleImage(true)
+            setFilePath(photo)
+        }
+
+    }
 
     const loadData = () => {
         getRequest({url: `${Urls().visits}/${id}`})
@@ -64,7 +74,7 @@ const TableVisits: React.FC = observer(({id, setIdVisit, onClickEditVisit}) => {
                     }
                         }/><DeleteBtn  id={item.id} store={VisitStore} url={Urls().visits}/></Flex>,
                         date_format: item.date ? formatDate(item.date) : null,
-                        photo_name: getNameFile(item.photo || '')
+                        photo_name:  <Button onClick={onClickPhoto(item.photo)} type='link'> {getNameFile(item.photo || '')}</Button>,
                     }
                 });
                 VisitStore.Result = [...results]
@@ -76,7 +86,7 @@ const TableVisits: React.FC = observer(({id, setIdVisit, onClickEditVisit}) => {
     useEffect(()=> runInAction(() => loadData()), [])
     useEffect(()=> runInAction(() => loadData()), [id])
     return (
-        <Table columns={columns} dataSource={VisitStore.sortByDateDesc()} />
+        <Table  pagination={{pageSize: 5}} columns={columns} dataSource={VisitStore.sortByDateDesc()} />
     )
 })
 

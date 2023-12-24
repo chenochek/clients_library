@@ -1,7 +1,6 @@
 import React, { useEffect, useState} from 'react';
-import {DatePicker, Form,  Input, Modal, Upload} from 'antd';
+import {DatePicker, Form, Input, Modal, notification, Upload} from 'antd';
 import {PlusOutlined} from "@ant-design/icons/lib";
-import {DatePickerProps} from "antd/es/date-picker";
 import CalendarLocale from 'rc-picker/lib/locale/ru_RU';
 import {runInAction} from "mobx";
 import Urls from "../constants/url";
@@ -11,6 +10,7 @@ import RootStore from "../stores/RootStore.jsx";
 import dayjs from 'dayjs';
 import {observer} from 'mobx-react'
 import {getNameFile} from "../utils/getNameFile.js"
+import {useCustomNotification} from "../hooks/useCustomNotification";
 
 
 
@@ -24,6 +24,7 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
         const {getRequest, postRequest, putRequest} = useHttp();
         const rootStore = RootStore();
         const {ClientsStore} = rootStore.useStores();
+        const [api, contextHolder] = notification.useNotification();
 
         const props: UploadProps = {
             onRemove: (file) => {
@@ -82,14 +83,25 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
                     if(! result["data"]["status"]) return;
                     console.log('result', result)
                     runInAction(()=>{
-                        ClientsStore.editClientById(id, {...obj, id: id, date_birth: obj.dateBirth });
-                        ClientsStore.CurrentClient = {...obj, id: id, date_birth: obj.dateBirth  };
+                        ClientsStore.editClientById(id, {...obj, id: id, date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit });
+                        ClientsStore.CurrentClient = {...obj, id: id, date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit   };
+                    })
+                    api.info({
+                        message:  'Информация об изменении',
+                        description: 'Данные о клиенте успешно обновлены',
+                        placement: 'topRight',
                     })
                 } else {
-                    const result = await postRequest({url: `${Urls().clients}`, data: obj})
+                    const result = await postRequest({url: `${Urls().clients}`, data: obj});
                     runInAction(()=>{
-                        ClientsStore.addNewClient({...obj, id: result["data"]["id"], last_visit: null });
-                        ClientsStore.CurrentClient = {...obj, id: result["data"]["id"], last_visit: null };
+                        const client = result["data"]["client"]
+                        ClientsStore.addNewClient({...client});
+                        ClientsStore.CurrentClient = {...client};
+                    })
+                    api.info({
+                        message:  'Информация о добавлении',
+                        description: 'Новый клиент успешно добавлен',
+                        placement: 'topRight',
                     })
                 }
 
@@ -98,6 +110,11 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
             }
             catch (info) {
                 console.log('Validate Failed:', info);
+                api.error({
+                    message:  'Информация об операции',
+                    description: 'Произошла какая-то ошибка. Операция не выполнена',
+                    placement: 'topRight',
+                })
             }
         }
 
@@ -111,6 +128,7 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
             let preview = null;
             if(persData.agreement) {
                 const nameFile = getNameFile(persData.agreement);
+                console.log('in ModalNewClients nameFile', nameFile)
                 const  imageUrl = await postRequest({url:`${Urls().image}`, data: {
                         nameFile: nameFile
                     }});
@@ -156,6 +174,7 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
 
         return (
             <>
+                {contextHolder}
                 <Modal forceRender  title={isEdit? "Добавить клиента" : "Редактировать клиента"} open={isOpen} onOk={handleOk} onCancel={handleCancel}>
                     <Form
                         form={form}

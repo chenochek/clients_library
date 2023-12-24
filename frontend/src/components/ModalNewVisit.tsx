@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {DatePicker, Flex, Form, Input, Modal, Upload} from 'antd';
+import {Button, DatePicker, Flex, Form, Input, Modal, notification, Upload} from 'antd';
 import {PlusOutlined} from "@ant-design/icons/lib";
 import CalendarLocale from 'rc-picker/lib/locale/ru_RU';
 import TextArea from "antd/es/input/TextArea";
@@ -14,18 +14,21 @@ import DeleteBtn from "./DeleteBtn";
 import {getNameFile} from "../utils/getNameFile"
 import dayjs from 'dayjs';
 import formatDate from "../utils/formatDate.js"
+import {useCustomNotification} from "../hooks/useCustomNotification";
 
 
 CalendarLocale["shortWeekDays"] = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 CalendarLocale["shortMonths"] = ["Янв", "Фев", "Март", "Апр", "Май", "Июнь", "Июль", "Авг", "Сент", "Окт", "Нояб", "Дек"]
 
-const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = false, idVisit = null, onClickEditVisit, setIdVisit}) => {
+const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = false, idVisit = null, onClickEditVisit, setIdVisit,
+                                          setVisibleImage, setFilePath}) => {
 
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState<UploadFile[]>([]);
     const rootStore = RootStore();
     const {ClientsStore, VisitStore} = rootStore.useStores();
     const {getRequest, postRequest, putRequest} = useHttp();
+    const [api, contextHolder] = notification.useNotification();
 
     const props: UploadProps = {
         onRemove: (file) => {
@@ -42,6 +45,16 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
         fileList,
     };
 
+
+    const onClickPhoto = (photo) => {
+        return () => {
+            if(!photo) return;
+            setVisibleImage(true)
+            setFilePath(photo)
+        }
+
+    }
+
     const normFile = (e: any) => {
         if (Array.isArray(e)) {
             return e;
@@ -56,9 +69,10 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
             const isFileListEmpty = !values.photo || values.photo?.length === 0;
             let isFileListChange = true;
             let file = null;
-            if (!isFileListEmpty) {//we need convert new photo too
+            const visit =  VisitStore.getById(Number(idVisit))
+            if (!isFileListEmpty) {
                 const nameUploadFile = values.photo[0]["name"]
-                const namePreviousFile = VisitStore.getById(Number(idVisit)) ? getNameFile(VisitStore.getById(Number(idVisit))?.photo) : null
+                const namePreviousFile = getNameFile(visit?.photo || '')
                 isFileListChange = nameUploadFile !== namePreviousFile
             }
             if (isFileListChange) {
@@ -69,7 +83,6 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
                 file = await postRequest({url: `${Urls().convert}`, data: formData})
             }
 
-            console.log('file', file)
 
             const obj = {
                 client_id: Number(ClientsStore.CurrentClient["id"]),
@@ -79,7 +92,7 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
                 comment: values.comment || null,
                 photo: isFileListEmpty ? null :
                     isFileListChange ? file["data"]?.fileName?.toString()
-                        : VisitStore.getById(Number(idVisit))?.photo
+                        : visit?.photo
             };
             form.resetFields();
             setIsOpen(false);
@@ -88,24 +101,30 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
                 const result = await putRequest({url: `${Urls().visits}/${idVisit}`, data: obj});
                 if (!result["data"]["status"]) return;
                 runInAction(() => {
-                    const visit = VisitStore.getById(idVisit)
                     VisitStore.editVisitById(Number(idVisit), {
                         ...visit,
-                        date_format: obj.date ? formatDate(obj.date) : null,
                         ...obj,
-                        photo_name: getNameFile(obj.photo || '')
+                        key: Number(visit.id),
+                        date_format: obj.date ? formatDate(obj.date) : null,
+                        photo_name:  <Button onClick={onClickPhoto(obj.photo)} type='link'> {getNameFile(obj.photo || '')}</Button>
                     });
+                });
+                api.info({
+                    message:  'Информация об изменении',
+                    description: 'Данные о посещении успешно изменены',
+                    placement: 'topRight',
                 })
             } else {
                 const result = await postRequest({url: `${Urls().visits}`, data: obj})
                 const data = result["data"]
+                console.log('data', data)
                 runInAction(() => {
                     VisitStore.addNewVisit({
                         ...obj,
                         id: Number(data["id"]),
                         key: Number(data["id"]),
-                        date_format: data.date ? formatDate(data.date) : null,
-                        photo_name: getNameFile(data.photo || ''),
+                        date_format: obj.date ? formatDate(obj.date) : null,
+                        photo_name: <Button onClick={onClickPhoto(obj.photo)} type='link'>{getNameFile(obj.photo || '')}</Button>,
                         action:
                             <Flex>
                                 <EditBtn title="Редактировать сведения о посещении" onClick={() => {
@@ -117,11 +136,22 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
                             </Flex>
                     });
                 })
+                api.info({
+                    message:  'Информация о добавлении',
+                    description: 'Новое посещение успешно добавлено',
+                    placement: 'topRight',
+                })
             }
 
         }
         catch (info) {
             console.log('Validate Failed:', info);
+            api.error({
+                message:  'Информация об операции',
+                description: 'Операция не выполнена. Произошла ошибка',
+                placement: 'topRight',
+            })
+
         }
     };
 
@@ -173,9 +203,8 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
     }, [])
 
     useEffect(() => {
-        //if (!isEdit) return;
-        //if(!isOpen) return;
         if(idVisit) {
+            form.resetFields();
             loadData();
         } else {
             form.resetFields();
@@ -189,6 +218,7 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
 
     return (
         <>
+            {contextHolder}
             <Modal forceRender title={isEdit ? "Редактировать посещение" : "Добавить посещение"} open={isOpen}
                    onOk={handleOk} onCancel={handleCancel}>
                 <Form

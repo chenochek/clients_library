@@ -1,4 +1,5 @@
 import {observable, action} from 'mobx'
+import formatDate from "../utils/formatDate";
 
 const VisitStore = observable({
     result: [],
@@ -24,7 +25,7 @@ const VisitStore = observable({
     },
     editVisitById(id, newVisit) {
         const index = this.getVisitIndexById(id);
-        this.result[index] = newVisit;
+        this.result = [...this.result.slice(0, index), newVisit, ...this.result.slice(index + 1)];
 
     },
 
@@ -33,6 +34,10 @@ const VisitStore = observable({
     },
     addNewVisit(newVisit) {
         this.result = [newVisit, ...this.result]
+    },
+    getLiveSearchResult(searchStr) {
+        return this.initial.filter(el => `${el.duration} ${el.price} ${el.date && formatDate(el.date)} ${el.comment}`
+            .toUpperCase().includes(searchStr.toUpperCase()));
     },
     sortByDateDesc() {
         return this.result.slice().sort((a, b) => {

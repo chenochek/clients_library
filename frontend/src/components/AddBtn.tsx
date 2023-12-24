@@ -5,7 +5,7 @@ import {PlusOutlined} from "@ant-design/icons";
 const AddBtn: React.FC = ({onClick, id =null, isEdit = false, title}) => {
     return (
         <Tooltip placement="top" title={title}>
-            <Button onClick={onClick} type="primary" style={{ margin: 16 }} shape="circle" icon={<PlusOutlined />} />
+            <Button onClick={onClick} type="primary" style={{ margin: 4, width: 35, height: 35 }} shape="circle" icon={<PlusOutlined />} />
         </Tooltip>
     )
 } ;

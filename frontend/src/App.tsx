@@ -6,7 +6,6 @@ import ClientPage from "./pages/Client";
 
 
 function App() {
-
     return (
         <>
             <BrowserRouter>

@@ -1,12 +1,20 @@
 import React from 'react';
-import { FloatButton, Popconfirm} from 'antd';
+import {FloatButton, notification, Popconfirm} from 'antd';
 import {DeleteOutlined} from "@ant-design/icons";
 import {observer} from 'mobx-react'
 import {runInAction} from "mobx";
 import useHttp from "../hooks/useHttp.js";
+import {useCustomNotification} from "../hooks/useCustomNotification";
+import RootStore from "../stores/RootStore.jsx";
+import { useNavigate } from "react-router-dom";
 
 const DeleteBtn = observer( ({id, title = "Удалить", store, url}) => {
         const {deleteRequest} = useHttp();
+
+        const rootStore = RootStore();
+        const {ClientsStore} = rootStore.useStores();
+
+        const navigate = useNavigate();
 
 
         const onConfirm = () => {
@@ -20,6 +28,9 @@ const DeleteBtn = observer( ({id, title = "Удалить", store, url}) => {
                         console.log('error', error)
                     });
             });
+            if(store === ClientsStore) {
+                navigate('/')
+            }
         };
 
         return (
