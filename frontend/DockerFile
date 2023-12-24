@@ -1,0 +1,8 @@
+FROM node:20.7.0
+WORKDIR /frontend
+ENV CHOKIDAR_USEPOLLING=true
+COPY package*.json ./
+COPY . .
+RUN npm install
+EXPOSE 5173
+CMD ["npm", "run", "build"]

@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+    - '5173:5173'
+    depends_on:
+    - backend
+    volumes:
+    - ./frontend/src:/frontend/src
+    - ./frontend/public:/frontend/public
+    command: npm run build
+    stdin_open: true
+    tty: true
+    restart: always
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+    - '3000:3000'
+    environment:
+    - PGDATABASE=clients
+    - PGHOST=localhost
+    - PGUSER=postgres
+    - PGPASSWORD=user
+    - PGPORT=5432
+    depends_on:
+    - db
+    volumes:
+    - ./backend:/backend
+    - /backend/node_modules
+    command: npm run start
+    restart: always
+  db:
+    build:
+      context: ./db
+    volumes:
+    - db-volume:/var/lib/postgresql/data
+    ports:
+    - '5432:5432'
+volumes:
+  db-volume:
