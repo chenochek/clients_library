@@ -1,5 +1,7 @@
 FROM node:20.7.0
 WORKDIR /backend
+MKDIR /temp/
+MKDIR /public/images/
 COPY package*.json ./
 COPY . .
 RUN npm i
