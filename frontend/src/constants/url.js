@@ -1,6 +1,6 @@
 const Urls = () => {
    // const domain = `http://localhost:3000`;
-    const domain = `http://93.125.114.118:3000/`
+    const domain = `http://93.125.114.118:3000`
     return {
         'clients': `${domain}/clients`,
         'visits': `${domain}/visits`,
