@@ -68,7 +68,7 @@ app.post('/images/convert/webp', async (req, res) => {
             //send response
             res.send({
                 'status': true,
-                'fileName': `${__dirname}\\${fileName}`,
+                'fileName': fileName,
             });
 
             if (fs.existsSync(uploadPath)) {
