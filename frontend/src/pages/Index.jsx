@@ -13,6 +13,7 @@ import Urls from "../constants/url";
 import {SortCustom} from "../components/SortCustom";
 import {CarouselCustom} from "../components/CarouselCustom"
 import HomeBtn from "../components/HomeBtn";
+import { useNavigate } from "react-router-dom";
 
 
 const IndexPage = observer(() => {
@@ -23,6 +24,8 @@ const IndexPage = observer(() => {
     const {ClientsStore} = rootStore.useStores();
     const {BirthStore} = rootStore.useStores();
     const {getRequest, postRequest} = useHttp();
+
+    const navigate = useNavigate();
 
     useEffect(() => runInAction(() => {
         ClientsStore.CurrentClient = null;
@@ -50,7 +53,13 @@ const IndexPage = observer(() => {
             .then(result => BirthStore.Tomorrow = [...result])
             .catch(()=> {});
 
-    }), [])
+    }), []);
+
+    useEffect(() => {
+        ClientsStore.CurrentClient && navigate(`/clients/${ClientsStore.CurrentClient.id}`)
+    }, [
+        ClientsStore.CurrentClient
+    ])
 
     return (
         <>

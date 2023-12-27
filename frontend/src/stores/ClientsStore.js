@@ -31,21 +31,28 @@ const ClientsStore = observable({
         return this.sortedArr;
     },
     getClientById(id) {
-        return this.Result.find(el => el["id"] === id);
+        return this.Result.find(el => Number(el["id"]) === Number(id));
     },
     getClientIndexById(id) {
-        return this.Result.findIndex(el => el["id"] === id);
+        return this.Result.findIndex(el => Number(el["id"]) === Number(id));
+    },
+    getInitialIndexById(id) {
+        return this.Initial.findIndex(el => Number(el["id"]) === Number(id));
     },
     editClientById(id, newClient) {
-        const index = this.getClientIndexById(Number(id));
+        const index = this.getClientIndexById(id);
         this.result = [...this.result.slice(0, index), newClient, ...this.result.slice(index + 1)]
+        const initialIndex = this.getInitialIndexById(id);
+        this.initial = [...this.initial.slice(0, initialIndex), newClient, ...this.initial.slice(initialIndex + 1)]
     },
 
     deleteById(id) {
-        this.Result = this.Result.filter(el => el["id"] !== id);
+        this.result = this.result.filter(el => Number(el["id"]) !== Number(id));
+        this.initial = this.initial.filter(el => Number(el["id"]) !== Number(id));
     },
     addNewClient(newClient) {
-        this.Result = [newClient, ...this.Result]
+        this.Result = [newClient, ...this.Result];
+        this.Initial = [...this.sortByFio([...this.Initial, newClient])]
     },
     getLiveSearchResult(searchStr) {
         return this.initial.filter(el => `${el.fio} ${el.mobile} ${el.date_birth && formatDate(el.date_birth)}`

@@ -82,8 +82,8 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
                     const result = await putRequest({url: `${Urls().clients}/${id}`, data: obj});
                     if(! result["data"]["status"]) return;
                     runInAction(()=>{
-                        ClientsStore.editClientById(id, {...obj, id: id, date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit });
-                        ClientsStore.CurrentClient = {...obj, id: id, date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit   };
+                        ClientsStore.editClientById(id, {...obj, id: Number(id), date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit });
+                        ClientsStore.CurrentClient = {...obj, id: Number(id), date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit   };
                     })
                     api.info({
                         message:  'Информация об изменении',
@@ -97,6 +97,7 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
                         const client = result["data"]["client"]
                         ClientsStore.addNewClient({...client});
                         ClientsStore.CurrentClient = {...client};
+                        console.log('ClientsStore.CurrentClient', ClientsStore.CurrentClient)
                     })
                     api.info({
                         message:  'Информация о добавлении',
