@@ -117,7 +117,6 @@ const ModalNewVisit: React.FC = observer(({isOpen = false, setIsOpen, isEdit = f
             } else {
                 const result = await postRequest({url: `${Urls().visits}`, data: obj})
                 const data = result["data"]
-                console.log('data', data)
                 runInAction(() => {
                     VisitStore.addNewVisit({
                         ...obj,

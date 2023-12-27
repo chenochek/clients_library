@@ -26,7 +26,7 @@ app.use(
 
 app.use(fileUpload({
     useTempFiles : true,
-    tempFileDir : '/tmp/'
+    tempFileDir : path.join(__dirname, '/temp/')
 }));
 
 

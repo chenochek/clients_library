@@ -68,7 +68,6 @@ const ClientPage = observer(() => {
 
 
         const today = new Date();
-        console.log('today', today)
 
         if (BirthStore.Today.length <= 0) {
             postRequest({

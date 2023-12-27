@@ -81,7 +81,6 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
                 if(isEdit) {
                     const result = await putRequest({url: `${Urls().clients}/${id}`, data: obj});
                     if(! result["data"]["status"]) return;
-                    console.log('result', result)
                     runInAction(()=>{
                         ClientsStore.editClientById(id, {...obj, id: id, date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit });
                         ClientsStore.CurrentClient = {...obj, id: id, date_birth: obj.dateBirth, last_visit: ClientsStore.CurrentClient.last_visit   };
@@ -92,6 +91,7 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
                         placement: 'topRight',
                     })
                 } else {
+                    form.resetFields();
                     const result = await postRequest({url: `${Urls().clients}`, data: obj});
                     runInAction(()=>{
                         const client = result["data"]["client"]
@@ -128,7 +128,6 @@ const ModalNewClient: React.FC = observer(({isOpen = false, setIsOpen, isEdit = 
             let preview = null;
             if(persData.agreement) {
                 const nameFile = getNameFile(persData.agreement);
-                console.log('in ModalNewClients nameFile', nameFile)
                 const  imageUrl = await postRequest({url:`${Urls().image}`, data: {
                         nameFile: nameFile
                     }});
