@@ -63,7 +63,7 @@ app.post('/images/convert/webp', async (req, res) => {
             uploadPath = path.join(__dirname, '/temp/', file.name);
             file.mv(uploadPath);
             convertedFile = await convertToWebP(uploadPath);
-            const fileName = saveToFile(convertedFile);
+            const fileName = saveToFile(convertedFile, __dirname);
 
             //send response
             res.send({
